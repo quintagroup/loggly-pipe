@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+# vim:fileencoding=utf-8
+
+import os
+import urllib
+import sys
+from datetime import datetime
+
+
+TOKEN = os.environ['LOGGLY_TOKEN']
+
+TAG = os.environ.get('LOGGLY_TAG', 'python')
+LOGGLY_SERVER = os.environ.get('LOGGLY_SERVER', 'https://logs-01.loggly.com')
+
+BATCH_SIZE = int(os.environ.get('LOGGLY_BATCH_SIZE', '100'))
+LOG_URL = '{}/inputs/{}/tag/{}/'.format(LOGGLY_SERVER, TOKEN, TAG)
+
+
+def main():
+    while True:
+        for record in ship_a_batch(BATCH_SIZE, LOG_URL):
+            if record[0] == 'line':
+                sys.stdout.write(record[1])
+                sys.stdout.flush()
+            elif record[0] == 'mark':
+                sys.stderr.write('{}: {}\n'.format(*record[1]))
+
+
+def ship_a_batch(batch_size, log_url):
+    buf = []
+
+    for _ in range(batch_size):
+        line = sys.stdin.readline()
+        buf.append('PLAINTEXT=' + urllib.quote(line.strip()))
+        yield ('line', line)
+
+    yield ('mark', (
+        datetime.now(),
+        urllib.urlopen(log_url, '&'.join(buf)).read()
+    ))
+
+
+if __name__ == '__main__':
+    sys.exit(main())
