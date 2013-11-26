@@ -6,7 +6,10 @@ Pretends to be Loggly, or really just a black hole.
 from __future__ import print_function
 
 import sys
-import urlparse
+try:
+    from urllib.parse import parse_qsl # pylint: disable=F0401,E0611
+except ImportError:
+    from urlparse import parse_qsl # pylint: disable=F0401
 
 
 def main():
@@ -41,7 +44,7 @@ def fake_loggly_server(environ, start_response):
                 int(environ['CONTENT_LENGTH'])
             )
             sys.stdout.flush()
-            for _, value in urlparse.parse_qsl(body):
+            for _, value in parse_qsl(body):
                 print('===> {!r}'.format(value))
                 sys.stdout.flush()
 

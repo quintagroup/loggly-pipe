@@ -11,7 +11,10 @@ import sys
 import time
 import threading
 
-from Queue import Queue
+try:
+    from queue import Queue # pylint: disable=F0401
+except ImportError:
+    from Queue import Queue # pylint: disable=F0401
 
 
 def main():
@@ -92,8 +95,8 @@ def _shipper_loop(line_queue, batch_size, log_url):
 
             _ship_batch(buf, log_url)
 
-    except (OSError, IOError), err:
-        json.dump({'error': err.message}, sys.stderr)
+    except (OSError, IOError) as err:
+        json.dump({'error': str(err)}, sys.stderr)
         print('', file=sys.stderr)
         return False
 
@@ -105,10 +108,15 @@ def _ship_batch(buf, log_url):
     if not buf:
         return
 
-    import urllib
+    try:
+        from urllib.request import urlopen # pylint: disable=E0611,F0401
+        from urllib.parse import urlencode # pylint: disable=E0611,F0401
+    except ImportError:
+        from urllib import urlopen, urlencode # pylint: disable=E0611
+
     from datetime import datetime
 
-    response = urllib.urlopen(log_url, urllib.urlencode(buf)).read().strip()
+    response = urlopen(log_url, urlencode(buf)).read().strip()
     json.dump({
         '_mark': datetime.utcnow().isoformat(),
         'result': response
