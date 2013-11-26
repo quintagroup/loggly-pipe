@@ -1,5 +1,7 @@
 ---
 language: python
-script: ./runtests
+script:
+- pylint ./loggly_pipe/
+- ./runtests
 notifications:
   email: github+loggly-pipe@modcloth.com

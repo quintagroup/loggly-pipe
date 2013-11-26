@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # vim:fileencoding=utf-8
+"""
+It's ``loggly-pipe``, nerds!
+"""
 from __future__ import print_function
 
 import json
@@ -11,7 +14,10 @@ from datetime import datetime
 
 
 def main():
-    cfg = get_config(os.environ)
+    """
+    Read configuration from ``os.environ``, then eat and poop JSON forevar.
+    """
+    cfg = _get_config(os.environ)
     i = 1
 
     if cfg['debug']:
@@ -23,7 +29,7 @@ def main():
             if i > cfg['max_loops']:
                 return 0
 
-            for record in ship_a_batch(cfg['batch_size'], cfg['log_url']):
+            for record in _ship_a_batch(cfg['batch_size'], cfg['log_url']):
                 if record['type'] == 'line':
                     sys.stdout.write(record['line'])
                     sys.stdout.flush()
@@ -37,11 +43,14 @@ def main():
 
             i += 1
 
-    except KeyboardInterrupt, IOError:
+    except (KeyboardInterrupt, IOError):
         return 0
 
 
-def get_config(env):
+def _get_config(env):
+    """
+    Reads configuration from dict-like env, coercing and defaulting as needed.
+    """
     token = env['LOGGLY_TOKEN']
 
     tag = env.get('LOGGLY_TAG', 'python')
@@ -61,7 +70,10 @@ def get_config(env):
     }
 
 
-def ship_a_batch(batch_size, log_url):
+def _ship_a_batch(batch_size, log_url):
+    """
+    Buffers up a list of lines, then URL-encodes and POSTs to Loggly.
+    """
     buf = []
 
     for _ in range(batch_size):
