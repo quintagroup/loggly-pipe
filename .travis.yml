@@ -1,0 +1,5 @@
+---
+language: python
+script: ./runtests
+notifications:
+  email: github+loggly-pipe@modcloth.com

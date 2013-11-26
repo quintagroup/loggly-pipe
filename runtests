@@ -1,0 +1,64 @@
+#!/bin/bash
+
+set -e
+
+export PORT=${PORT:-9090}
+export INPUT_RECORD_COUNT=100
+export LOGGLY_TOKEN=fizzbuzz-$RANDOM
+export LOGGLY_SERVER="http://localhost:${PORT}"
+export LOGGLY_BATCH_SIZE=10
+export LOGGLY_MAX_LOOPS=10
+export EXE="${EXE:-./loggly_pipe/__main__.py}"
+
+setup() {
+  ./loggly_pipe/fake_loggly_server.py >/dev/null 2>&1 &
+  export SERVER_PID="$!"
+
+  {
+    for i in $(seq 1 $INPUT_RECORD_COUNT) ; do
+      echo "{\"how_much_chuck\":\"$RANDOM\"}"
+    done
+  } > "$1"
+}
+
+teardown() {
+  kill "$SERVER_PID"
+  rm -f "${1:-$TMPIN}" "${2:-$TMPOUT}"
+}
+
+suite() {
+  local exe="$1"
+  local input="$2"
+  local output="$3"
+  local exitstatus
+
+  if [[ $DEBUG ]] ; then
+    set -x
+  fi
+
+  setup "$input"
+
+  "$exe" < "$input" > "$output" 2>&1
+
+  if [[ $(grep -c '^{"_mark' "$output") == $LOGGLY_MAX_LOOPS ]] ; then
+    echo 'Success!'
+    exitstatus=0
+  else
+    echo 'Fail!'
+    exitstatus=1
+  fi
+
+  if [[ $DEBUG ]] ; then
+    cat "$input" "$output"
+  fi
+
+  teardown "$input" "$output"
+  exit "$exitstatus"
+}
+
+trap 'teardown' SIGINT
+
+TMPIN=$(mktemp -t "loggly-pipe-$$.in")
+TMPOUT=$(mktemp -t "loggly-pipe-$$.out")
+
+suite "$EXE" "$TMPIN" "$TMPOUT"
