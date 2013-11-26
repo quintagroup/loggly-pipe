@@ -58,7 +58,7 @@ suite() {
 
 trap 'teardown' SIGINT
 
-TMPIN=$(mktemp -t "loggly-pipe-$$.in")
-TMPOUT=$(mktemp -t "loggly-pipe-$$.out")
+TMPIN=$(mktemp -t "loggly-pipe-$$.in.XXXX")
+TMPOUT=$(mktemp -t "loggly-pipe-$$.out.XXXX")
 
 suite "$EXE" "$TMPIN" "$TMPOUT"
