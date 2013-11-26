@@ -14,7 +14,7 @@
 installing directly from the raw github URL works great:
 
 ``` bash
-curl -L -o loggly-pipe https://raw.github.com/modcloth-labs/loggly-pipe/master/loggly_pipe/__main__.py
+curl -L -o loggly-pipe https://raw.github.com/modcloth-labs/loggly-pipe/master/loggly_pipe.py
 chmod +x loggly-pipe
 ```
 
@@ -41,3 +41,6 @@ the `bunyan` command line tool for human readability:
 ``` bash
 node server.js | loggly-pipe | bunyan
 ```
+
+A trivial example that's used in the black-box test of `loggly-pipe`
+itself can be found in the [examples dir](./examples).

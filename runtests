@@ -4,7 +4,7 @@ set -e
 
 export PORT=${PORT:-19090}
 
-export EXE="${EXE:-./loggly_pipe/__main__.py}"
+export EXE="${EXE:-./loggly_pipe.py}"
 export LOGGLY_BATCH_SIZE=10
 export LOGGLY_MAX_LINES=100
 export LOGGLY_SERVER="http://localhost:${PORT}"
@@ -12,7 +12,7 @@ export LOGGLY_TOKEN=fizzbuzz-$RANDOM
 export LOOPS=200
 
 setup() {
-  ./loggly_pipe/fake_loggly_server.py >$1 2>$2 &
+  ./fake_loggly_server.py >$1 2>$2 &
   export SERVER_PID="$!"
 
   while ! curl -s localhost:$PORT >/dev/null ; do
@@ -32,14 +32,19 @@ suite() {
   local servererr="$4"
   local exitstatus
 
+  echo '---> START SUITE'
+
   if [[ $DEBUG ]] ; then
     set -x
+    echo "---> output file: $output"
+    echo "---> server output file: $serveroutput"
+    echo "---> server error file: $servererr"
   fi
 
   setup "$serveroutput" "$servererr"
 
   echo "Running $exe > $output"
-  ./loggly_pipe/example_app.py | "$exe" > "$output"
+  ./examples/example_app.py | "$exe" > "$output"
 
   if [[ $(grep -c '^===> ' "$serveroutput") == $LOGGLY_MAX_LINES ]] ; then
     echo 'Success!'
@@ -59,6 +64,7 @@ suite() {
   fi
 
   teardown "$output" "$serveroutput" "$servererr"
+  echo '---> END SUITE'
   exit "$exitstatus"
 }
 

@@ -3,7 +3,7 @@
 """
 It's ``loggly-pipe``, nerds!
 """
-from __future__ import print_function
+from __future__ import print_function, unicode_literals
 
 import json
 import os
@@ -116,10 +116,10 @@ def _ship_batch(buf, log_url):
 
     from datetime import datetime
 
-    response = urlopen(log_url, urlencode(buf)).read().strip()
+    response = urlopen(log_url, urlencode(buf).encode('UTF-8')).read().strip()
     json.dump({
         '_mark': datetime.utcnow().isoformat(),
-        'result': response
+        'result': response.decode('UTF-8')
     }, sys.stderr)
     print('', file=sys.stderr)
 
