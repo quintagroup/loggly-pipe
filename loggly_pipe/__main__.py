@@ -39,6 +39,9 @@ def main():
     shipper.start()
 
     def cleanup():
+        """
+        Closes down the queue and shipper the nice way.
+        """
         line_queue.put('___FLUSH___')
         line_queue.put('___EXIT___')
         shipper.join()
@@ -59,14 +62,18 @@ def main():
 
 
 def _flush_tick(line_queue, interval):
+    """
+    Sends periodic flushes to the line queue.
+    """
     while True:
         time.sleep(interval)
         line_queue.put('___FLUSH___')
 
 
 def _shipper_loop(line_queue, batch_size, log_url):
-    must_exit = False
-
+    """
+    Accumulates and ships batches of lines to ``log_url``.
+    """
     try:
         while True:
             buf = []
@@ -85,14 +92,16 @@ def _shipper_loop(line_queue, batch_size, log_url):
 
             _ship_batch(buf, log_url)
 
-    except Exception, e:
-        json.dump({'error': e.message}, sys.stderr)
+    except (OSError, IOError), err:
+        json.dump({'error': err.message}, sys.stderr)
         print('', file=sys.stderr)
-        raise
         return False
 
 
 def _ship_batch(buf, log_url):
+    """
+    Performs the URL encoding and HTTP fun.
+    """
     if not buf:
         return
 

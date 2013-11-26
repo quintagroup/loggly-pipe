@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 # vim:fileencoding=utf-8
+"""
+A little example JSON-making thing.
+"""
 
 import sys
 import os
@@ -8,8 +11,14 @@ from random import randint
 
 
 def main():
+    """
+    Dump random JSON records to stdout ``os.environ['LOOPS']`` times.
+    """
     for i in range(int(os.environ['LOOPS'])):
-        json.dump({'foo': randint(0, 1000)}, sys.stdout)
+        json.dump({
+            'foo': randint(0, 1000),
+            'i': i
+        }, sys.stdout)
         print('')
     return 0
 
