@@ -7,10 +7,11 @@ from __future__ import print_function
 
 import json
 import os
-import urllib
 import sys
+import time
+import threading
 
-from datetime import datetime
+from Queue import Queue
 
 
 def main():
@@ -18,33 +19,92 @@ def main():
     Read configuration from ``os.environ``, then eat and poop JSON forevar.
     """
     cfg = _get_config(os.environ)
-    i = 1
-
     if cfg['debug']:
         json.dump({'_config': cfg}, sys.stderr)
         print('', file=sys.stderr)
 
+    line_queue = Queue()
+    flusher = threading.Thread(
+        name='flusher',
+        target=_flush_tick,
+        args=(line_queue, cfg['flush_interval'])
+    )
+    shipper = threading.Thread(
+        name='shipper',
+        target=_shipper_loop,
+        args=(line_queue, cfg['batch_size'], cfg['log_url'])
+    )
+    flusher.daemon = True
+    flusher.start()
+    shipper.start()
+
+    def cleanup():
+        line_queue.put('___FLUSH___')
+        line_queue.put('___EXIT___')
+        shipper.join()
+
+    i = 1
     try:
-        while True:
-            if i > cfg['max_loops']:
+        for line in _input_lines(cfg['sleep_interval']):
+            print(line, file=sys.stdout, end='')
+            line_queue.put(line.strip())
+            i += 1
+            if i > cfg['max_lines']:
+                cleanup()
                 return 0
 
-            for record in _ship_a_batch(cfg['batch_size'], cfg['log_url']):
-                if record['type'] == 'line':
-                    sys.stdout.write(record['line'])
-                    sys.stdout.flush()
-
-                elif record['type'] == 'mark':
-                    json.dump({
-                        '_mark': record['timestamp'].isoformat(),
-                        'result': record['result']
-                    }, sys.stderr)
-                    print('', file=sys.stderr)
-
-            i += 1
-
     except (KeyboardInterrupt, IOError):
+        cleanup()
         return 0
+
+
+def _flush_tick(line_queue, interval):
+    while True:
+        time.sleep(interval)
+        line_queue.put('___FLUSH___')
+
+
+def _shipper_loop(line_queue, batch_size, log_url):
+    must_exit = False
+
+    try:
+        while True:
+            buf = []
+
+            for _ in range(batch_size):
+                line = line_queue.get()
+                if line == '___EXIT___':
+                    _ship_batch(buf, log_url)
+                    return True
+
+                elif line == '___FLUSH___':
+                    _ship_batch(buf, log_url)
+                    buf = []
+                else:
+                    buf.append(('PLAINTEXT', line))
+
+            _ship_batch(buf, log_url)
+
+    except Exception, e:
+        json.dump({'error': e.message}, sys.stderr)
+        print('', file=sys.stderr)
+        raise
+        return False
+
+
+def _ship_batch(buf, log_url):
+    if not buf:
+        return
+
+    import urllib
+    from datetime import datetime
+
+    response = urllib.urlopen(log_url, urllib.urlencode(buf)).read().strip()
+    json.dump({
+        '_mark': datetime.utcnow().isoformat(),
+        'result': response
+    }, sys.stderr)
+    print('', file=sys.stderr)
 
 
 def _get_config(env):
@@ -57,43 +117,38 @@ def _get_config(env):
     loggly_server = env.get('LOGGLY_SERVER', 'https://logs-01.loggly.com')
 
     batch_size = int(env.get('LOGGLY_BATCH_SIZE', '100'))
-    max_loops = int(env.get('LOGGLY_MAX_LOOPS', '10000'))
+    max_lines = int(env.get('LOGGLY_MAX_LINES', '10000'))
     debug = env.get('DEBUG') is not None
+    sleep_interval = float(env.get('LOGGLY_STDIN_SLEEP_INTERVAL', '0.1'))
+    flush_interval = float(env.get('LOGGLY_FLUSH_INTERVAL', '10.0'))
 
     log_url = '{}/inputs/{}/tag/{}/'.format(loggly_server, token, tag)
 
     return {
         'batch_size': batch_size,
-        'max_loops': max_loops,
+        'max_lines': max_lines,
         'debug': debug,
+        'sleep_interval': sleep_interval,
+        'flush_interval': flush_interval,
         'log_url': log_url
     }
 
 
-def _ship_a_batch(batch_size, log_url):
+def _input_lines(sleep_interval=0.1):
     """
-    Buffers up a list of lines, then URL-encodes and POSTs to Loggly.
+    Reads lines from stdin, dangit.
     """
-    buf = []
+    while True:
+        if sys.stdin.closed:
+            raise StopIteration
 
-    for _ in range(batch_size):
         line = sys.stdin.readline()
         stripped = line.strip()
         if not stripped:
+            time.sleep(sleep_interval)
             continue
 
-        buf.append(('PLAINTEXT', stripped))
-        yield {
-            'type': 'line',
-            'line': line
-        }
-
-    if buf:
-        yield {
-            'type': 'mark',
-            'timestamp': datetime.utcnow(),
-            'result': urllib.urlopen(log_url, urllib.urlencode(buf)).read()
-        }
+        yield line
 
 
 if __name__ == '__main__':
