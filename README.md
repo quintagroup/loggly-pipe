@@ -1,6 +1,8 @@
 `loggly-pipe`
 =============
 
+[![Build Status](https://travis-ci.org/modcloth-labs/loggly-pipe.png)](https://travis-ci.org/modcloth-labs/loggly-pipe)
+
 - Eats JSON from stdin.
 - Sends batches to Loggly (or compatible).
 - Poops unaltered JSON to stdout.
