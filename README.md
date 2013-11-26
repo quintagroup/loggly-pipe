@@ -22,7 +22,7 @@ chmod +x loggly-pipe
 
 All configuration is env-based:
 
-- `LOGGLY_TOKEN` **REQUIRED** one of the token's from your Loggly account
+- `LOGGLY_TOKEN` **REQUIRED** one of the tokens from your Loggly account
 - `LOGGLY_SERVER` the base server URI (default
   `https://logs-01.loggly.com`)
 - `LOGGLY_TAG` tag to apply to the shipped records (default `python`)
