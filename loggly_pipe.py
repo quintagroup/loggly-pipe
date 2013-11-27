@@ -130,7 +130,7 @@ def _get_config(env):
     """
     token = env['LOGGLY_TOKEN']
 
-    tag = env.get('LOGGLY_TAG', 'python')
+    tags = env.get('LOGGLY_TAGS', 'python')
     loggly_server = env.get('LOGGLY_SERVER', 'https://logs-01.loggly.com')
 
     batch_size = int(env.get('LOGGLY_BATCH_SIZE', '100'))
@@ -139,7 +139,7 @@ def _get_config(env):
     sleep_interval = float(env.get('LOGGLY_STDIN_SLEEP_INTERVAL', '0.1'))
     flush_interval = float(env.get('LOGGLY_FLUSH_INTERVAL', '10.0'))
 
-    log_url = '{}/inputs/{}/tag/{}/'.format(loggly_server, token, tag)
+    log_url = '{}/inputs/{}/tag/{}/'.format(loggly_server, token, tags)
 
     return {
         'batch_size': batch_size,

@@ -25,7 +25,9 @@ All configuration is env-based:
 - `LOGGLY_TOKEN` **REQUIRED** one of the tokens from your Loggly account
 - `LOGGLY_SERVER` the base server URI (default
   `https://logs-01.loggly.com`)
-- `LOGGLY_TAG` tag to apply to the shipped records (default `python`)
+- `LOGGLY_TAGS` comma-delimited tags to apply to the shipped records.
+  This is passed directly as the last member of `PATH_INFO`, so it
+  should be URL-encoded if necessary.  (default `python`)
 - `LOGGLY_BATCH_SIZE` number of records to accumulate before shipping
   over HTTP (default `100`)
 
