@@ -8,18 +8,24 @@ import sys
 import os
 import json
 from random import randint
+from datetime import datetime
 
 
 def main():
     """
     Dump random JSON records to stdout ``os.environ['LOOPS']`` times.
     """
-    for i in range(int(os.environ.get('LOOPS', '100'))):
+    max_loops = int(os.environ.get('LOOPS', '0'))
+    n_loop = 0
+
+    while max_loops == 0 or n_loop < max_loops:
         json.dump({
-            'foo': randint(0, 1000),
-            'i': i
+            'wat': randint(0, 1000),
+            'timestamp': datetime.utcnow().isoformat()
         }, sys.stdout)
         print('')
+        n_loop += 1
+
     return 0
 
 
