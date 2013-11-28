@@ -58,7 +58,7 @@ def main():
             if i > cfg['max_lines']:
                 cleanup()
                 return 0
-
+        return 0
     except (KeyboardInterrupt, IOError):
         cleanup()
         return 0
@@ -159,7 +159,7 @@ def _input_lines(sleep_interval=0.1):
         if sys.stdin.closed:
             raise StopIteration
 
-        line = sys.stdin.readline()
+        line = sys.stdin.readline().decode('UTF-8')
         stripped = line.strip()
         if not stripped:
             time.sleep(sleep_interval)
