@@ -3,9 +3,9 @@ PYFILES := $(shell git ls-files '*.py')
 .PHONY: lint
 lint: .venv .venv3
 	.venv/bin/pip install -r requirements.txt
-	.venv/bin/pylint $(PYFILES)
+	.venv/bin/pylint -f colorized $(PYFILES)
 	.venv3/bin/pip install -r requirements.txt
-	.venv3/bin/pylint $(PYFILES)
+	.venv3/bin/pylint -f colorized $(PYFILES)
 	@echo '--- DING! ---'
 
 .venv:

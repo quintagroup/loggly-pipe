@@ -9,6 +9,7 @@ export LOGGLY_BATCH_SIZE=10
 export LOGGLY_MAX_LINES=100
 export LOGGLY_SERVER="http://localhost:${PORT}"
 export LOGGLY_TOKEN=fizzbuzz-$RANDOM
+export LOGGLY_SHIPPER_COUNT=2
 export LOOPS=200
 
 setup() {
@@ -34,7 +35,7 @@ suite() {
 
   echo '---> START SUITE'
 
-  if [[ $DEBUG ]] ; then
+  if [[ $LOGGLY_DEBUG ]] ; then
     set -x
     echo "---> output file: $output"
     echo "---> server output file: $serveroutput"
@@ -54,7 +55,7 @@ suite() {
     exitstatus=1
   fi
 
-  if [[ $DEBUG ]] ; then
+  if [[ $LOGGLY_DEBUG ]] ; then
     echo '--- OUTPUT ---'
     cat "$output"
     echo '--- SERVER OUTPUT ---'

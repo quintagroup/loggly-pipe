@@ -25,11 +25,26 @@ All configuration is env-based:
 - `LOGGLY_TOKEN` **REQUIRED** one of the tokens from your Loggly account
 - `LOGGLY_SERVER` the base server URI (default
   `https://logs-01.loggly.com`)
+- `LOGGLY_SHIPPER_COUNT` number of shipper threads (default `1`)
 - `LOGGLY_TAGS` comma-delimited tags to apply to the shipped records.
   This is passed directly as the last member of `PATH_INFO`, so it
   should be URL-encoded if necessary.  (default `python`)
 - `LOGGLY_BATCH_SIZE` number of records to accumulate before shipping
   over HTTP (default `100`)
+- `LOGGLY_MAX_LINES` exit after consuming this many lines (default `0`,
+  which disables)
+- `LOGGLY_STDIN_SLEEP_INTERVAL` interval in seconds to sleep when line
+  read from stdin is empty (default `0.1`)
+- `LOGGLY_FLUSH_INTERVAL` interval in seconds at which to flush the line
+  buffer so that low activity doesn't cause records to back up (default
+  `10.0`)
+- `LOGGLY_SHIP_ATTEMPTS` number of times to retry each batch over HTTP
+  (default `1`)
+- `LOGGLY_ON_ERROR` behavior when exceptions are caught, which is
+  usually around shipping over HTTP, and will only take effect once
+  `LOGGLY_SHIP_ATTEMPTS` has been reached (choices are `raise`, `ignore`;
+  default `raise`)
+- `LOGGLY_DEBUG` print some debuggy stuff if non-empty
 
 ## Usage
 

@@ -4,7 +4,7 @@ python:
 - '2.7'
 - '3.3'
 script:
-- pylint $(git ls-files '*.py')
+- pylint -f colorized $(git ls-files '*.py')
 - ./runtests
 notifications:
   email: github+loggly-pipe@modcloth.com
