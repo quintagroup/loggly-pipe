@@ -45,7 +45,7 @@ suite() {
   setup "$serveroutput" "$servererr"
 
   echo "Running $exe > $output"
-  ./examples/example_app.py | "$exe" > "$output"
+  ./examples/json_app.py | "$exe" > "$output"
 
   if [[ $(grep -c '^===> ' "$serveroutput") == $LOGGLY_MAX_LINES ]] ; then
     echo 'Success!'
