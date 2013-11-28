@@ -14,7 +14,7 @@ def main():
     """
     Dump random JSON records to stdout ``os.environ['LOOPS']`` times.
     """
-    for i in range(int(os.environ['LOOPS'])):
+    for i in range(int(os.environ.get('LOOPS', '100'))):
         json.dump({
             'foo': randint(0, 1000),
             'i': i

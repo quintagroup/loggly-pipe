@@ -12,7 +12,7 @@ export LOGGLY_TOKEN=fizzbuzz-$RANDOM
 export LOOPS=200
 
 setup() {
-  ./fake_loggly_server.py >$1 2>$2 &
+  ./examples/fake_loggly_server.py >$1 2>$2 &
   export SERVER_PID="$!"
 
   while ! curl -s localhost:$PORT >/dev/null ; do
