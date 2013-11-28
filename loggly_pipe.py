@@ -159,7 +159,10 @@ def _input_lines(sleep_interval=0.1):
         if sys.stdin.closed:
             raise StopIteration
 
-        line = sys.stdin.readline().decode('UTF-8')
+        line = sys.stdin.readline()
+        if hasattr(line, 'decode'):
+            line = line.decode('UTF-8')
+
         stripped = line.strip()
         if not stripped:
             time.sleep(sleep_interval)
