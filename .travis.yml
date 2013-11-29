@@ -1,4 +1,3 @@
----
 language: python
 python:
 - '2.7'
@@ -8,3 +7,12 @@ script:
 - ./runtests
 notifications:
   email: github+loggly-pipe@modcloth.com
+deploy:
+  provider: pypi
+  user: meatballhat
+  password:
+    secure: F/jjPk3MgZLGP1VLjy82zEzTfQIo+uwb74BMGHDr6Pivay+vj6eIfNwvv2g7wYouqr08URHCzZfZDxc8SHUI/8O0F1Uf623mUAyzazMaFB2kJGxNCETo+heV8TaUC9a71zZ1Ut7PZ1jeETPPuJd9PxA4g8d5WfXFO9/ZV2VX5pI=
+  on:
+    tags: true
+    repo: modcloth-labs/loggly-pipe
+    branch: master
