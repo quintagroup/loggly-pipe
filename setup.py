@@ -6,7 +6,6 @@ from __future__ import print_function
 
 import ast
 import sys
-from subprocess import check_output
 
 from setuptools import setup
 
