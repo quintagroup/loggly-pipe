@@ -1,7 +1,8 @@
 ``loggly-pipe``
 ===============
 
-.. image:: https://travis-ci.org/modcloth-labs/loggly-pipe.png?branch=master   :target: https://travis-ci.org/modcloth-labs/loggly-pipe
+.. image:: https://travis-ci.org/modcloth-labs/loggly-pipe.png?branch=master
+   :target: https://travis-ci.org/modcloth-labs/loggly-pipe
 
 * Eats JSON from stdin.
 * Sends batches to Loggly (or compatible).
