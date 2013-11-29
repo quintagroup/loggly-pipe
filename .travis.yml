@@ -16,3 +16,4 @@ deploy:
     tags: true
     repo: modcloth-labs/loggly-pipe
     branch: master
+    python: '3.3'
