@@ -6,6 +6,7 @@ It's ``loggly-pipe``, nerds!
 from __future__ import print_function, unicode_literals
 
 import json
+import optparse
 import os
 import sys
 import time
@@ -17,11 +18,11 @@ except ImportError:
     from Queue import Queue # pylint: disable=F0401
 
 
-def main():
+def main(sysargs=sys.argv[:]):
     """
     Read configuration from ``os.environ``, then eat and poop JSON forevar.
     """
-    cfg = _get_config(os.environ)
+    cfg = _get_config(sysargs, os.environ)
     _debug = _debug_func(cfg['debug'])
     _debug({'msg': 'dumping config', 'config': cfg})
 
@@ -185,37 +186,93 @@ def _ship_batch(buf, log_url, attempts=1):
                 raise
 
 
-def _get_config(env):
+def _build_option_parser(env):
+    """
+    Builds the option parser, taking defaults from env.
+    """
+    parser = optparse.OptionParser()
+    parser.add_option('-t', '--token',
+        dest='token', help='api token [REQUIRED]', metavar='LOGGLY_TOKEN',
+        default=env.get('LOGGLY_TOKEN'))
+    parser.add_option('-T', '--tags',
+        dest='tags', help='tags applied via input URL', metavar='LOGGLY_TAGS',
+        default=env.get('LOGGLY_TAGS', 'python'))
+    parser.add_option('-s', '--server',
+        dest='loggly_server', help='server base URL', metavar='LOGGLY_SERVER',
+        default=env.get('LOGGLY_SERVER', 'https://logs-01.loggly.com'))
+    parser.add_option('-b', '--batch-size',
+        dest='batch_size', help='batch size to send to Loggly',
+        metavar='LOGGLY_BATCH_SIZE',
+        default=env.get('LOGGLY_BATCH_SIZE', '100'),
+        type='int')
+    parser.add_option('-M', '--max-lines',
+        dest='max_lines', help='max lines to consume before exiting',
+        metavar='LOGGLY_MAX_LINES',
+        default=env.get('LOGGLY_MAX_LINES', '0'),
+        type='int')
+    parser.add_option('-a', '--ship-attempts',
+        dest='n_attempts', help='number of attempts to ship logs over HTTP',
+        metavar='LOGGLY_SHIP_ATTEMPTS',
+        default=env.get('LOGGLY_SHIP_ATTEMPTS', '1'),
+        type='int')
+    parser.add_option('-c', '--shipper-count',
+        dest='n_shippers', help='number of shipper threads to create',
+        metavar='LOGGLY_SHIPPER_COUNT',
+        default=env.get('LOGGLY_SHIPPER_COUNT', '1'),
+        type='int')
+    parser.add_option('-D', '--debug',
+        dest='is_debug', help='output debuggy things',
+        metavar='LOGGLY_DEBUG',
+        default=env.get('LOGGLY_DEBUG') is not None,
+        action='store_true')
+    parser.add_option('-S', '--sleep-interval',
+        dest='sleep_interval',
+        help='interval to sleep when input lines are empty',
+        metavar='LOGGLY_STDIN_SLEEP_INTERVAL',
+        default=env.get('LOGGLY_STDIN_SLEEP_INTERVAL', '0.1'),
+        type='float')
+    parser.add_option('-F', '--flush-interval',
+        dest='flush_interval',
+        help='interval at which to flush the output HTTP to prevent' +
+             'stale buffered records',
+        metavar='LOGGLY_FLUSH_INTERVAL',
+        default=env.get('LOGGLY_FLUSH_INTERVAL', '10.0'),
+        type='float')
+    parser.add_option('-E', '--exc-behavior',
+        dest='exc_behavior',
+        help='behavior when exceptions are caught',
+        metavar='LOGGLY_ON_ERROR',
+        default=env.get('LOGGLY_ON_ERROR', 'raise'),
+        choices=['raise', 'ignore'])
+    return parser
+
+
+def _get_config(sysargs, env):
     """
     Reads configuration from dict-like env, coercing and defaulting as needed.
     """
-    token = env['LOGGLY_TOKEN']
+    parser = _build_option_parser(env)
+    options, _ = parser.parse_args(sysargs[1:])
+    if options.token is None:
+        print('Missing required `-t`/`--token` argument', file=sys.stderr)
+        parser.print_help()
+        sys.exit(1)
 
-    tags = env.get('LOGGLY_TAGS', 'python')
-    loggly_server = env.get('LOGGLY_SERVER', 'https://logs-01.loggly.com')
-
-    batch_size = int(env.get('LOGGLY_BATCH_SIZE', '100'))
-    max_lines = int(env.get('LOGGLY_MAX_LINES', '0'))
-    n_attempts = int(env.get('LOGGLY_SHIP_ATTEMPTS', '1'))
-
-    n_shippers = int(env.get('LOGGLY_SHIPPER_COUNT', '1'))
-
-    is_debug = env.get('LOGGLY_DEBUG') is not None
-    sleep_interval = float(env.get('LOGGLY_STDIN_SLEEP_INTERVAL', '0.1'))
-    flush_interval = float(env.get('LOGGLY_FLUSH_INTERVAL', '10.0'))
-    exc_behavior = env.get('LOGGLY_ON_ERROR', 'raise')
-
-    log_url = '{}/inputs/{}/tag/{}/'.format(loggly_server, token, tags)
+    log_url = '{}/inputs/{}/tag/{}/'.format(
+        options.loggly_server,
+        options.token,
+        options.tags
+    )
 
     return {
-        'batch_size': batch_size,
-        'max_lines': max_lines,
-        'n_attempts': n_attempts,
-        'debug': is_debug,
-        'n_shippers': n_shippers,
-        'sleep_interval': sleep_interval,
-        'flush_interval': flush_interval,
-        'exc_behavior': exc_behavior,
+        'batch_size': options.batch_size,
+        'max_lines': options.max_lines,
+        'n_attempts': options.n_attempts,
+        'debug': options.is_debug,
+        'n_shippers': options.n_shippers,
+        'sleep_interval': options.sleep_interval,
+        'flush_interval': options.flush_interval,
+        'exc_behavior': options.exc_behavior,
         'log_url': log_url
     }
 
