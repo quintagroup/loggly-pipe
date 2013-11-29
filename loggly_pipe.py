@@ -18,6 +18,9 @@ except ImportError:
     from Queue import Queue # pylint: disable=F0401
 
 
+__version__ = '0.2.0'
+
+
 def main(sysargs=sys.argv[:]):
     """
     Read configuration from ``os.environ``, then eat and poop JSON forevar.
@@ -190,7 +193,9 @@ def _build_option_parser(env):
     """
     Builds the option parser, taking defaults from env.
     """
-    parser = optparse.OptionParser()
+    parser = optparse.OptionParser(
+        version='loggly-pipe {}'.format(__version__)
+    )
     parser.add_option('-t', '--token',
         dest='token', help='api token [REQUIRED]', metavar='LOGGLY_TOKEN',
         default=env.get('LOGGLY_TOKEN'))

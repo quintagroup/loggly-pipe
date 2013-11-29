@@ -2,9 +2,10 @@
 """
 Packaging bits!
 """
+from __future__ import print_function
 
+import ast
 import sys
-from subprocess import check_output
 
 from setuptools import setup
 
@@ -13,14 +14,14 @@ PY3 = sys.version >= '3'
 
 def get_version():
     """
-    Get the version number from git, but without the leading ``v``.
+    Get the version from the source, but without importing.
     """
-    raw_version = check_output(
-        ['git', 'describe', '--always', '--tags']
-    ).strip()
-    if PY3:
-        raw_version = raw_version.decode('UTF-8')
-    return raw_version.replace('v', '')
+    with open('loggly_pipe.py') as source:
+        for node in ast.walk(ast.parse(source.read(), 'loggly_pipe.py')):
+            if node.__class__.__name__ == 'Assign' and \
+               node.targets[0].__class__.__name__ == 'Name' and \
+               node.targets[0].id == '__version__':
+                return node.value.s
 
 
 def get_long_description():

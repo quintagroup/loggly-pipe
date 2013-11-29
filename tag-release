@@ -1,0 +1,15 @@
+#!/bin/bash
+
+set -e
+
+NEXT="v$(python setup.py --version)"
+CURRENT="$(git tag | tail -1)"
+
+if [[ "$NEXT" == "$CURRENT" ]] ; then
+  echo "$NEXT is already the current tag" >&2
+  exit 0
+fi
+
+REF="$(git log -1 --format='%h')"
+
+git tag -a -m "Tagging $NEXT" "$NEXT" "$REF"
