@@ -4,9 +4,9 @@
 .. image:: https://travis-ci.org/modcloth-labs/loggly-pipe.png?branch=master
    :target: https://travis-ci.org/modcloth-labs/loggly-pipe
 
-* Eats JSON from stdin.
+* Eats lines from stdin.
 * Sends batches to Loggly (or compatible).
-* Poops unaltered JSON to stdout.
+* Poops unaltered lines to stdout.
 * Poops ``mark`` JSON to stdout.
 
 Installation
@@ -19,11 +19,25 @@ directly from the raw github URL works great:
 
     curl -L -o loggly-pipe https://raw.github.com/modcloth-labs/loggly-pipe/master/loggly_pipe.py
     chmod +x loggly-pipe
+    
+You can also grab it via ``pip``, which will install a ``loggly-pipe`` executable:
+
+.. code-block:: bash
+
+    pip install loggly_pipe
+
 
 Configuration
 -------------
 
-All configuration is env-based:
+Configuration may be given via the command line or the env.  The latest command line
+options are available like one might expect:
+
+.. code-block:: bash
+
+    loggly-pipe --help
+
+Here's a list of the environment variables that are used as the option defaults:
 
 * ``LOGGLY_TOKEN`` **REQUIRED** one of the tokens from your Loggly account
 * ``LOGGLY_SERVER`` the base server URI (default
