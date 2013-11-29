@@ -19,7 +19,8 @@ def get_version():
     with open('loggly_pipe.py') as source:
         for node in ast.walk(ast.parse(source.read(), 'loggly_pipe.py')):
             if node.__class__.__name__ == 'Assign' and \
-               '__version__' in ast.dump(node.targets[0]):
+               node.targets[0].__class__.__name__ == 'Name' and \
+               node.targets[0].id == '__version__':
                 return node.value.s
 
 
