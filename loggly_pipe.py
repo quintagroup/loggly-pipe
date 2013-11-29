@@ -193,7 +193,9 @@ def _build_option_parser(env):
     """
     Builds the option parser, taking defaults from env.
     """
-    parser = optparse.OptionParser()
+    parser = optparse.OptionParser(
+        version='loggly-pipe {}'.format(__version__)
+    )
     parser.add_option('-t', '--token',
         dest='token', help='api token [REQUIRED]', metavar='LOGGLY_TOKEN',
         default=env.get('LOGGLY_TOKEN'))
