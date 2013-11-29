@@ -11,6 +11,10 @@ lint: .py2lint .py3lint
 test: .py2test .py3test
 	@echo '--- YAY! ---'
 
+.PHONY: release
+release: test
+	./tag-release
+
 .PHONY: .py2test
 .py2test: .py2reqs
 	source .venv/bin/activate && ./runtests
