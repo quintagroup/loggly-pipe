@@ -17,6 +17,11 @@ def get_version():
     return raw_version.replace('v', '')
 
 
+def get_long_description():
+    with open('README.rst') as readme:
+        return readme.read().strip()
+
+
 setup(
     name='loggly_pipe',
     author='Dan Buch',
@@ -25,8 +30,10 @@ setup(
     keywords='loggly logging http logs',
     url='https://github.com/modcloth-labs/loggly-pipe',
     description='Pipe stuff to Loggly.',
+    long_description=get_long_description(),
     version=get_version(),
     py_modules=['loggly_pipe'],
+    platforms=['any'],
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
