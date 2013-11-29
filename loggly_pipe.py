@@ -18,6 +18,9 @@ except ImportError:
     from Queue import Queue # pylint: disable=F0401
 
 
+__version__ = '0.2.0'
+
+
 def main(sysargs=sys.argv[:]):
     """
     Read configuration from ``os.environ``, then eat and poop JSON forevar.
