@@ -1,4 +1,7 @@
 # vim:fileencoding=utf-8
+"""
+Packaging bits!
+"""
 
 import sys
 from subprocess import check_output
@@ -9,6 +12,9 @@ PY3 = sys.version >= '3'
 
 
 def get_version():
+    """
+    Get the version number from git, but without the leading ``v``.
+    """
     raw_version = check_output(
         ['git', 'describe', '--always', '--tags']
     ).strip()
@@ -18,6 +24,9 @@ def get_version():
 
 
 def get_long_description():
+    """
+    Use the ``README.rst`` as the long description.
+    """
     with open('README.rst') as readme:
         return readme.read().strip()
 
