@@ -18,7 +18,7 @@ except ImportError:
     from Queue import Queue # pylint: disable=F0401
 
 
-__version__ = '0.2.0'
+__version__ = '0.2.1'
 
 
 def main(sysargs=sys.argv[:]):
@@ -143,13 +143,13 @@ def _shipper_loop(line_queue, exc_queue, batch_size, log_url, attempts):
 
                 elif line == '___FLUSH___':
                     _ship_batch(buf, log_url, attempts)
-                    line_queue.task_done()
                     buf = []
                 else:
                     buf.append(('PLAINTEXT', line))
 
+                line_queue.task_done()
+
             _ship_batch(buf, log_url, attempts)
-            line_queue.task_done()
 
     except (OSError, IOError) as exc:
         json.dump({'error': str(exc)}, sys.stderr)
