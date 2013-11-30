@@ -2,3 +2,4 @@
 /.venv3/
 /examples/.vagrant/
 /*.egg-info/
+/dist/
