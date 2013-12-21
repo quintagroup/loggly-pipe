@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
+    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+
+    <title>Loggly-pipe by modcloth-labs</title>
+  </head>
+
+  <body>
+
+    <header>
+      <div class="container">
+        <h1>Loggly-pipe</h1>
+        <h2>Pipe it some lines.  Lines go to Loggly.  Fancy.</h2>
+
+        <section id="downloads">
+          <a href="https://github.com/modcloth-labs/loggly-pipe/zipball/master" class="btn">Download as .zip</a>
+          <a href="https://github.com/modcloth-labs/loggly-pipe/tarball/master" class="btn">Download as .tar.gz</a>
+          <a href="https://github.com/modcloth-labs/loggly-pipe" class="btn btn-github"><span class="icon"></span>View on GitHub</a>
+        </section>
+      </div>
+    </header>
+
+    <div class="container">
+      <section id="main_content">
+        <h1>
+<a name="loggly-pipe" class="anchor" href="#loggly-pipe"><span class="octicon octicon-link"></span></a><code>loggly-pipe</code>
+</h1>
+
+<p><img src="https://travis-ci.org/modcloth-labs/loggly-pipe.png?branch=master" alt="https://travis-ci.org/modcloth-labs/loggly-pipe"></p>
+
+<ul>
+<li>Eats lines from stdin.</li>
+<li>Sends batches to Loggly (or compatible).</li>
+<li>Poops unaltered lines to stdout.</li>
+<li>Poops <code>mark</code> JSON to stdout.</li>
+</ul><h2>
+<a name="installation" class="anchor" href="#installation"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p><code>loggly-pipe</code> is built to be executed as a standalone file, so installing
+directly from the raw github URL works great:</p>
+
+<div class="highlight highlight-bash"><pre>curl -L -o loggly-pipe https://raw.github.com/modcloth-labs/loggly-pipe/master/loggly_pipe.py
+chmod +x loggly-pipe
+</pre></div>
+
+<p>You can also grab it via <code>pip</code>, which will install a <code>loggly-pipe</code> executable:</p>
+
+<div class="highlight highlight-bash"><pre>pip install loggly_pipe
+</pre></div>
+
+<h2>
+<a name="configuration" class="anchor" href="#configuration"><span class="octicon octicon-link"></span></a>Configuration</h2>
+
+<p>Configuration may be given via the command line or the env.  The latest command line
+options are available like one might expect:</p>
+
+<div class="highlight highlight-bash"><pre>loggly-pipe --help
+</pre></div>
+
+<p>Here's a list of the environment variables that are used as the option defaults:</p>
+
+<ul>
+<li>
+<code>LOGGLY_TOKEN</code> <strong>REQUIRED</strong> one of the tokens from your Loggly account</li>
+<li>
+<code>LOGGLY_SERVER</code> the base server URI (default
+<code>https://logs-01.loggly.com</code>)</li>
+<li>
+<code>LOGGLY_SHIPPER_COUNT</code> number of shipper threads (default <code>1</code>)</li>
+<li>
+<code>LOGGLY_TAGS</code> comma-delimited tags to apply to the shipped records.
+This is passed directly as the last member of <code>PATH_INFO</code>, so it
+should be URL-encoded if necessary.  (default <code>python</code>)</li>
+<li>
+<code>LOGGLY_BATCH_SIZE</code> number of records to accumulate before shipping
+over HTTP (default <code>100</code>)</li>
+<li>
+<code>LOGGLY_MAX_LINES</code> exit after consuming this many lines (default <code>0</code>,
+which disables)</li>
+<li>
+<code>LOGGLY_STDIN_SLEEP_INTERVAL</code> interval in seconds to sleep when line
+read from stdin is empty (default <code>0.1</code>)</li>
+<li>
+<code>LOGGLY_FLUSH_INTERVAL</code> interval in seconds at which to flush the line
+buffer so that low activity doesn't cause records to back up (default
+<code>10.0</code>)</li>
+<li>
+<code>LOGGLY_SHIP_ATTEMPTS</code> number of times to retry each batch over HTTP
+(default <code>1</code>)</li>
+<li>
+<code>LOGGLY_ON_ERROR</code> behavior when exceptions are caught, which is
+usually around shipping over HTTP, and will only take effect once
+<code>LOGGLY_SHIP_ATTEMPTS</code> has been reached (choices are <code>raise</code>, <code>ignore</code>;
+default <code>raise</code>)</li>
+<li>
+<code>LOGGLY_DEBUG</code> print some debuggy stuff if non-empty</li>
+</ul><h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>Given a stdin stream made of line-based JSON records, <code>loggly-pipe</code> will
+emit each record unaltered as well as a record with a single <code>_mark</code> key
+for each batch.</p>
+
+<p>Here's an example of a node app that uses bunyan for logging as well as
+the <code>bunyan</code> command line tool for human readability:</p>
+
+<div class="highlight highlight-bash"><pre>node server.js <span class="p">|</span> loggly-pipe <span class="p">|</span> bunyan
+</pre></div>
+      </section>
+    </div>
+
+    
+  </body>
+</html>
