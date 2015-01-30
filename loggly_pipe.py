@@ -4,7 +4,8 @@
 It's ``loggly-pipe``, nerds!
 """
 from __future__ import print_function, unicode_literals
-
+import datetime
+import pytz
 import json
 import optparse
 import os
@@ -291,6 +292,20 @@ def _input_lines(sleep_interval=0.1):
             raise StopIteration
 
         line = sys.stdin.readline()
+
+        try:
+            json_object = json.loads(line)
+        except ValueError, e:
+            pass
+        else:
+            if '__REALTIME_TIMESTAMP' in json_object:
+                timestamp = datetime.datetime.fromtimestamp(int(json_object['__REALTIME_TIMESTAMP']) / 1e6)
+                # to utc
+                timestamp += datetime.timedelta(seconds=time.timezone)
+                json_object['timestamp'] =  timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+            line = json.dumps(json_object)
+
         if hasattr(line, 'decode'):
             line = line.decode('UTF-8')
 
