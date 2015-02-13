@@ -75,7 +75,7 @@ def main(sysargs=sys.argv[:]):
 
     i = 1
     try:
-        for line in _input_lines(cfg['sleep_interval']):
+        for line in _input_lines(cfg['sleep_interval'], cfg['filter_uids']):
             print(line, file=sys.stdout, end='')
             _debug({'msg': 'queuing line'})
             line_queue.put(line.strip())
@@ -250,6 +250,12 @@ def _build_option_parser(env):
         metavar='LOGGLY_ON_ERROR',
         default=env.get('LOGGLY_ON_ERROR', 'raise'),
         choices=['raise', 'ignore'])
+    parser.add_option('--exclude-uid',
+        dest='exclude_uid',
+        help='exclude input line if "_UID" value in exclude list',
+        action="append",
+        default=[]
+    )
     return parser
 
 
@@ -279,11 +285,12 @@ def _get_config(sysargs, env):
         'sleep_interval': options.sleep_interval,
         'flush_interval': options.flush_interval,
         'exc_behavior': options.exc_behavior,
-        'log_url': log_url
+        'log_url': log_url,
+        'filter_uids': options.exclude_uid
     }
 
 
-def _input_lines(sleep_interval=0.1):
+def _input_lines(sleep_interval=0.1, filter_uids=[]):
     """
     Reads lines from stdin, dangit.
     """
@@ -302,8 +309,10 @@ def _input_lines(sleep_interval=0.1):
                 timestamp = datetime.datetime.fromtimestamp(int(json_object['__REALTIME_TIMESTAMP']) / 1e6)
                 # to utc
                 timestamp += datetime.timedelta(seconds=time.timezone)
-                json_object['timestamp'] =  timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+                json_object['timestamp'] = timestamp.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
+            if "_UID" in json_object and json_object["_UID"] in filter_uids:
+                continue
             line = json.dumps(json_object)
 
         if hasattr(line, 'decode'):
